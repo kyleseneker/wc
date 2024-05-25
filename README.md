@@ -107,5 +107,4 @@ Contributions are welcome! If you find a bug or want to add a new feature, pleas
 ## TODOs
 
 * [ ] Add unit tests
-* [ ] Add support for `-L` flag (length of the line containing the most bytes or characters)
 * [ ] Add support for `-libxo` flag (generate output via libxo)
