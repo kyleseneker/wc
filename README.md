@@ -119,6 +119,16 @@ $ echo "Hello World" | ./wc
        1       2      12
 ```
 
+## Performance
+
+[hyperfine](https://github.com/sharkdp/hyperfine) is used to perform benchmarks.
+
+To run the pre-defined benchmark:
+
+```sh
+make benchmark
+```
+
 ## Contributing
 
 Contributions are welcome! If you find a bug or want to add a new feature, please open an issue or submit a pull request.
@@ -127,3 +137,4 @@ Contributions are welcome! If you find a bug or want to add a new feature, pleas
 
 * [ ] Add unit tests
 * [ ] Add support for `-libxo` flag (generate output via libxo)
+* [ ] Improve performance
