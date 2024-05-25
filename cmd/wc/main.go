@@ -13,6 +13,15 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+// Count represents various counts (lines, words, bytes, characters) and the longest line length.
+type Count struct {
+	Lines       int
+	Words       int
+	Bytes       int
+	Characters  int
+	LongestLine int
+}
+
 func main() {
 	logger := log.New(os.Stderr, "", 0)
 
@@ -38,75 +47,103 @@ func main() {
 				Name:  "L",
 				Usage: "Write the length of the line containing the most bytes (default) or characters (when -m is provided) to standard output.  When more than one file argument is specified, the longest input line of all files is reported as the value of the final \"total\".",
 			},
-			&cli.BoolFlag{
-				Name:  "libxo",
-				Usage: "Format output using libxo.",
-			},
 		},
 		Name:  "wc",
 		Usage: "word, line, character, and byte count",
 		Action: func(ctx *cli.Context) error {
-			var content []byte
-			var err error
+			var totalCount Count
+			var filesCount []Count
+			countChars := ctx.Bool("m")
 
 			// Read from standard input if no filename is provided
 			if ctx.Args().Len() == 0 {
-				content, err = io.ReadAll(os.Stdin)
+				content, err := io.ReadAll(os.Stdin)
 				if err != nil {
 					logger.Fatalf("error reading from standard input: %s", err)
 				}
+
+				getCounts(content, countChars)
 			} else {
-				// Read file
-				content, err = os.ReadFile(ctx.Args().First())
-				if err != nil {
-					logger.Fatalf("error reading from file: %s", err)
+				for _, filePath := range ctx.Args().Slice() {
+					content, err := os.ReadFile(filePath)
+					if err != nil {
+						logger.Fatalf("error reading from file %s: %s", filePath, err)
+					}
+
+					// Collect results from all files
+					fileCount := getCounts(content, countChars)
+					filesCount = append(filesCount, fileCount)
+					totalCount.Lines += fileCount.Lines
+					totalCount.Words += fileCount.Words
+					totalCount.Bytes += fileCount.Bytes
+					totalCount.Characters += fileCount.Characters
+					if fileCount.LongestLine > totalCount.LongestLine {
+						totalCount.LongestLine = fileCount.LongestLine
+					}
+
+					printCounts(fileCount, filePath, ctx)
 				}
 			}
 
-			filePath := ctx.Args().First()
-
-			if ctx.Bool("l") {
-				fmt.Printf("%8d", countLines(content))
-			}
-			if ctx.Bool("w") {
-				fmt.Printf("%8d", countWords(content))
-			}
-			// If both -m and -c flags are present, determine which one to use based on their order
-			if ctx.Bool("m") && ctx.Bool("c") {
-				// If -c comes after -m in the command-line arguments, use -c
-				if cPos, mPos := flagPosition("c"), flagPosition("m"); cPos > mPos {
-					fmt.Printf("%8d", len(content))
-				} else { // Otherwise, use -m
-					fmt.Printf("%8d", countCharacters(content))
-				}
-			}
-			// If -m flag is present and -c is not, return charater count and return
-			if ctx.Bool("m") && !ctx.Bool("c") {
-				fmt.Printf("%8d", countCharacters(content))
-			}
-			// If -c flag is present and -m is not, return byte count and return
-			if ctx.Bool("c") && !ctx.Bool("m") {
-				fmt.Printf("%8d", len(content))
-			}
-			if ctx.Bool("L") && !ctx.Bool("m") {
-				fmt.Printf("%8d", longestLineLength(content, false))
-			}
-			if ctx.Bool("L") && ctx.Bool("m") {
-				fmt.Printf("%8d", longestLineLength(content, true))
-			}
-			if ctx.Bool("l") || ctx.Bool("w") || ctx.Bool("c") || ctx.Bool("m") || ctx.Bool("L") {
-				fmt.Printf(" %s\n", filePath)
-				return nil
+			if len(filesCount) > 1 { // Only return a total line if more than one file is provided
+				printCounts(totalCount, "total", ctx)
 			}
 
-			// Default behavior if no flags are provided: print line, word, and byte counts
-			fmt.Printf("%8d%8d%8d %s\n", countLines(content), countWords(content), len(content), filePath)
 			return nil
 		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
 		logger.Fatal(err)
+	}
+}
+
+func getCounts(content []byte, countChars bool) Count {
+	return Count{
+		Lines:       countLines(content),
+		Words:       countWords(content),
+		Bytes:       len(content),
+		Characters:  countCharacters(content),
+		LongestLine: longestLineLength(content, countChars),
+	}
+}
+
+func printCounts(count Count, filePath string, ctx *cli.Context) {
+	if ctx.Bool("l") {
+		fmt.Printf("%8d", count.Lines)
+	}
+	if ctx.Bool("w") {
+		fmt.Printf("%8d", count.Words)
+	}
+	// If both -m and -c flags are present, determine which one to use based on their order
+	if ctx.Bool("m") && ctx.Bool("c") {
+		// If -c comes after -m in the command-line arguments, use -c
+		if cPos, mPos := flagPosition("c"), flagPosition("m"); cPos > mPos {
+			fmt.Printf("%8d", count.Bytes)
+		} else { // Otherwise, use -m
+			fmt.Printf("%8d", count.Characters)
+		}
+	}
+	// If -m flag is present and -c is not, return character count and return
+	if ctx.Bool("m") && !ctx.Bool("c") {
+		fmt.Printf("%8d", count.Characters)
+	}
+	// If -c flag is present and -m is not, return byte count and return
+	if ctx.Bool("c") && !ctx.Bool("m") {
+		fmt.Printf("%8d", count.Bytes)
+	}
+	if ctx.Bool("L") && !ctx.Bool("m") {
+		fmt.Printf("%8d", count.LongestLine)
+	}
+	if ctx.Bool("L") && ctx.Bool("m") {
+		fmt.Printf("%8d", count.LongestLine)
+	}
+
+	if ctx.Bool("l") || ctx.Bool("w") || ctx.Bool("c") || ctx.Bool("m") || ctx.Bool("L") {
+		fmt.Printf(" %s\n", filePath)
+	} else {
+		// Default behavior if no flags are provided: print line, word, and byte counts
+		fmt.Printf("%8d%8d%8d %s\n", count.Lines, count.Words, count.Bytes, filePath)
 	}
 }
 

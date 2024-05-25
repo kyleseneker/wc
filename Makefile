@@ -4,14 +4,14 @@ OS := $(shell go env GOOS)
 BUILDCMD=env GOOS=$(OS) GOARCH=amd64 go build -v
 
 build:
-	$(BUILDCMD) -o wc cmd/wc/*.go
+	$(BUILDCMD) -o wc cmd/wc/*.go 
 
 fmt:
-	gofmt -w *.go
+	@go fmt ./...
 
 clean:
-	go clean ./...
-	rm -rf ./wc
+	@go clean ./...
+	@rm -rf ./wc
 
 lint:
-	golangci-lint run ./...
+	@golangci-lint run ./...
