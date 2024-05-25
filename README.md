@@ -92,25 +92,31 @@ If no options are provided, `wc` displays lines, words, and bytes by default.
 Count lines, words, and bytes in a file:
 
 ```sh
-./wc examples/test.txt
+$ ./wc examples/test1.txt
+    7145   58164  342190 examples/test1.txt
 ```
 
 Count only lines and words in a file:
 
 ```sh
-./wc -l -w examples/test.txt
+$ ./wc -l -w examples/test1.txt
+    7145   58164 examples/test1.txt
 ```
 
 Count lines, words, and bytes in multiple files:
 
 ```sh
-./wc file1.txt file2.txt
+$ ./wc test1.txt test2.txt
+    7145   58164  342190 examples/test1.txt
+   22315  215838 1253970 examples/test2.txt
+   29460  274002 1596160 total
 ```
 
 Read from standard input:
 
 ```sh
-echo "Hello World" | ./wc
+$ echo "Hello World" | ./wc
+       1       2      12
 ```
 
 ## Contributing

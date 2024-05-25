@@ -62,7 +62,8 @@ func main() {
 					logger.Fatalf("error reading from standard input: %s", err)
 				}
 
-				getCounts(content, countChars)
+				fileCount := getCounts(content, countChars)
+				printCounts(fileCount, "", ctx)
 			} else {
 				for _, filePath := range ctx.Args().Slice() {
 					content, err := os.ReadFile(filePath)
