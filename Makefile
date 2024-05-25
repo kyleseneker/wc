@@ -4,7 +4,7 @@ OS := $(shell go env GOOS)
 BUILDCMD=env GOOS=$(OS) GOARCH=amd64 go build -v
 
 build:
-	$(BUILDCMD) -o wc
+	$(BUILDCMD) -o wc cmd/*.go
 
 fmt:
 	gofmt -w *.go
