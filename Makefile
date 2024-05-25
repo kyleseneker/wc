@@ -1,4 +1,4 @@
-.PHONY: build fmt clean
+.PHONY: build fmt clean lint
 
 OS := $(shell go env GOOS)
 BUILDCMD=env GOOS=$(OS) GOARCH=amd64 go build -v
@@ -10,4 +10,8 @@ fmt:
 	gofmt -w *.go
 
 clean:
-	go clean
+	go clean ./...
+	rm -rf ./wc
+
+lint:
+	golangci-lint run ./...
