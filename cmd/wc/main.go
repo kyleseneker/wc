@@ -10,8 +10,27 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	libxo "github.com/kyleseneker/wc/internal/libxo"
 	"github.com/urfave/cli/v2"
 )
+
+// CustomFlag is a custom flag type that supports only two dashes
+type CustomFlag struct {
+	cli.Flag
+	Name  string
+	Value bool
+	Usage string
+}
+
+// ParseFlag defines how to parse the flag
+func (f *CustomFlag) ParseFlag() cli.Flag {
+	return &cli.BoolFlag{
+		Name:    f.Name,
+		Value:   f.Value,
+		Aliases: []string{""},
+		Usage:   f.Usage,
+	}
+}
 
 func main() {
 	logger := log.New(os.Stderr, "", 0)
@@ -64,6 +83,10 @@ func main() {
 			}
 
 			filePath := ctx.Args().First()
+
+			if ctx.Bool("libxo") {
+				fmt.Println(libxo.ConvertToXML(content))
+			}
 
 			if ctx.Bool("l") {
 				fmt.Printf("%8d", countLines(content))
