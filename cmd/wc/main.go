@@ -29,23 +29,30 @@ func main() {
 		Flags: []cli.Flag{
 			&cli.BoolFlag{
 				Name:  "l",
-				Usage: "The number of lines in each input file is written to the standard output.",
+				Usage: `The number of lines in each input file is written to the standard output.`,
 			},
 			&cli.BoolFlag{
 				Name:  "w",
-				Usage: "The number of words in each input file is written to the standard output.",
+				Usage: `The number of words in each input file is written to the standard output.`,
 			},
 			&cli.BoolFlag{
-				Name:  "c",
-				Usage: "The number of bytes in each input file is written to the standard output. This will cancel out any prior usage of the `-m` option.",
+				Name: "c",
+				Usage: `The number of bytes in each input file is written to the standard output.
+	This will cancel out any prior usage of the '-m' option.`,
 			},
 			&cli.BoolFlag{
-				Name:  "m",
-				Usage: "The number of characters in each input file is written to the standard output. If the current locale does not support multibyte characters, this is equivalent to the `-c` option. This will cancel out any prior usage of the `-c` option.",
+				Name: "m",
+				Usage: `The number of characters in each input file is written to the standard output.
+	If the current locale does not support multibyte characters, this is
+	equivalent to the '-c' option. This will cancel out any prior usage of
+	the '-c' option.`,
 			},
 			&cli.BoolFlag{
-				Name:  "L",
-				Usage: "Write the length of the line containing the most bytes (default) or characters (when -m is provided) to standard output.  When more than one file argument is specified, the longest input line of all files is reported as the value of the final \"total\".",
+				Name: "L",
+				Usage: `Write the length of the line containing the most bytes (default) or characters
+	(when -m is provided) to standard output. When more than one file argument is
+	specified, the longest input line of all files is reported as the value of the
+	final 'total'.`,
 			},
 		},
 		Name:  "wc",
@@ -148,7 +155,7 @@ func printCounts(count Count, filePath string, ctx *cli.Context) {
 	}
 }
 
-// flagPosition returns the position of the flag in the command-line arguments
+// flagPosition returns the position of the flag in the command-line arguments.
 func flagPosition(flagName string) int {
 	for i := 1; i < len(os.Args)-1; i++ {
 		arg := os.Args[i]
@@ -160,7 +167,7 @@ func flagPosition(flagName string) int {
 	return -1
 }
 
-// countLines counts the number of lines in a byte slice
+// countLines counts the number of lines in a byte slice.
 func countLines(content []byte) int {
 	scanner := bufio.NewScanner(bytes.NewReader(content))
 	lineCount := 0
@@ -170,7 +177,7 @@ func countLines(content []byte) int {
 	return lineCount
 }
 
-// countWords counts the number of words in a byte slice
+// countWords counts the number of words in a byte slice.
 func countWords(content []byte) int {
 	scanner := bufio.NewScanner(bytes.NewReader(content))
 	scanner.Split(bufio.ScanWords)
@@ -193,8 +200,8 @@ func countCharacters(content []byte) int {
 }
 
 // longestLineLength returns the length of the longest line in a byte slice.
-// Returns length in bytes by default
-// Returns length in characters if countChars is true
+// Returns length in bytes by default.
+// Returns length in characters if countChars is true.
 func longestLineLength(content []byte, countChars bool) int {
 	scanner := bufio.NewScanner(bytes.NewReader(content))
 	maxLength := 0
