@@ -1,8 +1,8 @@
 # wc
 
-`wc` is a Golang program that mimics the functionality of the UNIX `wc` (word count) command-line tool. It reads one or more input files and prints the number of lines, words, and bytes contained in each file, along with a total line for all files combined. If no files are specified, it reads from the standard input.
+`wc` is a Golang program that mimics the functionality of the UNIX [wc](https://linux.die.net/man/1/wc) command-line utility. It reads one or more input files and prints the number of lines, words, and bytes contained in each file, along with a total line for all files combined. If no files are specified, it reads from the standard input.
 
-This project was created as a coding challenge from [codingchallenges.fyi](https://codingchallenges.fyi/challenges/challenge-wc).
+This project was originally created as part of a coding challenge from [codingchallenges.fyi](https://codingchallenges.fyi/challenges/challenge-wc).
 
 ## Features
 
@@ -132,6 +132,10 @@ make benchmark
 ## Contributing
 
 Contributions are welcome! If you find a bug or want to add a new feature, please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## TODOs
 
