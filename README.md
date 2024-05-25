@@ -28,7 +28,7 @@ To install the `wc` tool, you need to have Golang installed on your system. Foll
 1. Build the program:
 
     ```sh
-    go build -o wc
+    make build
     ```
 
 1. (Optional) Move the executable to a directory in your PATH:
