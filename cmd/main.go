@@ -13,62 +13,6 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func mainWithContext(ctx *cli.Context) error {
-	logger := log.New(os.Stderr, "", 0)
-
-	// Mocked context will be used in place of `ctx` for testing
-	var content []byte
-	var err error
-
-	// Read from standard input if no filename is provided
-	if ctx.Args().Len() == 0 {
-		content, err = io.ReadAll(os.Stdin)
-		if err != nil {
-			logger.Fatalf("error reading from standard input: %s", err)
-		}
-	} else {
-		// Read file
-		content, err = os.ReadFile(ctx.Args().First())
-		if err != nil {
-			logger.Fatalf("error reading from file: %s", err)
-		}
-	}
-
-	filePath := ctx.Args().First()
-
-	if ctx.Bool("l") {
-		fmt.Printf("%8d", countLines(content))
-	}
-	if ctx.Bool("w") {
-		fmt.Printf("%8d", countWords(content))
-	}
-	// If both -m and -c flags are present, determine which one to use based on their order
-	if ctx.Bool("m") && ctx.Bool("c") {
-		// If -c comes after -m in the command-line arguments, use -c
-		if cPos, mPos := flagPosition("c"), flagPosition("m"); cPos > mPos {
-			fmt.Printf("%8d", len(content))
-		} else { // Otherwise, use -m
-			fmt.Printf("%8d", countCharacters(content))
-		}
-	}
-	// If -m flag is present and -c is not, return charater count and return
-	if ctx.Bool("m") && !ctx.Bool("c") {
-		fmt.Printf("%8d", countCharacters(content))
-	}
-	// If -c flag is present and -m is not, return byte count and return
-	if ctx.Bool("c") && !ctx.Bool("m") {
-		fmt.Printf("%8d", len(content))
-	}
-	if ctx.Bool("l") || ctx.Bool("w") || ctx.Bool("c") || ctx.Bool("m") {
-		fmt.Printf(" %s\n", filePath)
-		return nil
-	}
-
-	// Default behavior if no flags are provided: print line, word, and byte counts
-	fmt.Printf("%8d%8d%8d %s\n", countLines(content), countWords(content), len(content), filePath)
-	return nil
-}
-
 func main() {
 	logger := log.New(os.Stderr, "", 0)
 
@@ -90,11 +34,67 @@ func main() {
 				Name:  "m",
 				Usage: "The number of characters in each input file is written to the standard output. If the current locale does not support multibyte characters, this is equivalent to the `-c` option. This will cancel out any prior usage of the `-c` option.",
 			},
+			&cli.BoolFlag{
+				Name:  "L",
+				Usage: "Write the length of the line containing the most bytes (default) or characters (when -m is provided) to standard output.  When more than one file argument is specified, the longest input line of all files is reported as the value of the final \"total\".",
+			},
 		},
 		Name:  "wc",
 		Usage: "word, line, character, and byte count",
 		Action: func(ctx *cli.Context) error {
-			return mainWithContext(ctx)
+			var content []byte
+			var err error
+
+			// Read from standard input if no filename is provided
+			if ctx.Args().Len() == 0 {
+				content, err = io.ReadAll(os.Stdin)
+				if err != nil {
+					logger.Fatalf("error reading from standard input: %s", err)
+				}
+			} else {
+				// Read file
+				content, err = os.ReadFile(ctx.Args().First())
+				if err != nil {
+					logger.Fatalf("error reading from file: %s", err)
+				}
+			}
+
+			filePath := ctx.Args().First()
+
+			if ctx.Bool("l") {
+				fmt.Printf("%8d", countLines(content))
+			}
+			if ctx.Bool("w") {
+				fmt.Printf("%8d", countWords(content))
+			}
+			// If both -m and -c flags are present, determine which one to use based on their order
+			if ctx.Bool("m") && ctx.Bool("c") {
+				// If -c comes after -m in the command-line arguments, use -c
+				if cPos, mPos := flagPosition("c"), flagPosition("m"); cPos > mPos {
+					fmt.Printf("%8d", len(content))
+				} else { // Otherwise, use -m
+					fmt.Printf("%8d", countCharacters(content))
+				}
+			}
+			// If -m flag is present and -c is not, return charater count and return
+			if ctx.Bool("m") && !ctx.Bool("c") {
+				fmt.Printf("%8d", countCharacters(content))
+			}
+			// If -c flag is present and -m is not, return byte count and return
+			if ctx.Bool("c") && !ctx.Bool("m") {
+				fmt.Printf("%8d", len(content))
+			}
+			if ctx.Bool("L") {
+				fmt.Printf("%8d", longestLineLength(content))
+			}
+			if ctx.Bool("l") || ctx.Bool("w") || ctx.Bool("c") || ctx.Bool("m") || ctx.Bool("L") {
+				fmt.Printf(" %s\n", filePath)
+				return nil
+			}
+
+			// Default behavior if no flags are provided: print line, word, and byte counts
+			fmt.Printf("%8d%8d%8d %s\n", countLines(content), countWords(content), len(content), filePath)
+			return nil
 		},
 	}
 
@@ -145,4 +145,17 @@ func countCharacters(content []byte) int {
 		content = content[size:]
 	}
 	return charCount
+}
+
+// longestLineLength returns the length of the longest line in a byte slice.
+func longestLineLength(content []byte) int {
+	scanner := bufio.NewScanner(bytes.NewReader(content))
+	maxLength := 0
+	for scanner.Scan() {
+		lineLength := len(scanner.Bytes()) + 1 // Include newline character
+		if lineLength > maxLength {
+			maxLength = lineLength
+		}
+	}
+	return maxLength
 }
