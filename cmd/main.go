@@ -84,8 +84,11 @@ func main() {
 			if ctx.Bool("c") && !ctx.Bool("m") {
 				fmt.Printf("%8d", len(content))
 			}
-			if ctx.Bool("L") {
-				fmt.Printf("%8d", longestLineLength(content))
+			if ctx.Bool("L") && !ctx.Bool("m") {
+				fmt.Printf("%8d", longestLineLength(content, false))
+			}
+			if ctx.Bool("L") && ctx.Bool("m") {
+				fmt.Printf("%8d", longestLineLength(content, true))
 			}
 			if ctx.Bool("l") || ctx.Bool("w") || ctx.Bool("c") || ctx.Bool("m") || ctx.Bool("L") {
 				fmt.Printf(" %s\n", filePath)
@@ -148,11 +151,17 @@ func countCharacters(content []byte) int {
 }
 
 // longestLineLength returns the length of the longest line in a byte slice.
-func longestLineLength(content []byte) int {
+// Returns length in bytes by default
+// Returns length in characters if countChars is true
+func longestLineLength(content []byte, countChars bool) int {
 	scanner := bufio.NewScanner(bytes.NewReader(content))
 	maxLength := 0
 	for scanner.Scan() {
-		lineLength := len(scanner.Bytes()) + 1 // Include newline character
+		lineLength := len(scanner.Text()) + 1 // Include newline character
+		if countChars {
+			// Count characters instead of bytes
+			lineLength = utf8.RuneCountInString(scanner.Text()) + 1 // Include newline character
+		}
 		if lineLength > maxLength {
 			maxLength = lineLength
 		}

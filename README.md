@@ -57,6 +57,10 @@ To read from standard input:
 
 ### Options
 
+* `-L`: Display length of longest line in bytes
+  * Returns length in bytes by default
+  * Returns length in characters if the `-m` option is provided
+
 * `-l`: Display the number of lines
 
 * `-w`: Display the number of words
